@@ -49,6 +49,8 @@ public:
    * 异常的判断和抛出
    * */
   inline const Type &operator()(size_t i, size_t j) const {
+      assert(i < M);
+      assert(j < N);
     return _data[i][j];
   }
 

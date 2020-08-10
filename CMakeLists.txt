@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.0.0)
 project(FIXED_WING_MATRIX_LIB)
 
 set(TEST_MATRIX ./test/test_matrix.cpp)

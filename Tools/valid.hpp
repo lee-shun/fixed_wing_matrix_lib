@@ -18,16 +18,11 @@
  */
 
 #include "../PrintControl/print_control.h"
+#include <assert.h>
 #include <math.h>
-namespace matrix {
 
-bool assert(bool exp) {
-  if (!(exp)) {
-    PRINT_ERROR("can't pass the assert!");
-    return false;
-  } else
-    return true;
-}
+
+namespace matrix {
 
 /**
  * Compare if two floating point numbers are equal
@@ -40,12 +35,10 @@ bool assert(bool exp) {
  * @param eps numerical tolerance of the check
  * @return true if the two values are considered equal, false otherwise
  */
-template<typename Type>
-bool isEqualF(const Type x, const Type y, const Type eps = 1e-4f)
-{
-    return (fabs(x - y) <= eps)
-           || (isnan(x) && isnan(y))
-           || (isinf(x) && isinf(y) && isnan(x - y));
+template <typename Type>
+bool isEqualF(const Type x, const Type y, const Type eps = 1e-4f) {
+  return (fabs(x - y) <= eps) || (isnan(x) && isnan(y)) ||
+         (isinf(x) && isinf(y) && isnan(x - y));
 }
 
 } // namespace matrix
