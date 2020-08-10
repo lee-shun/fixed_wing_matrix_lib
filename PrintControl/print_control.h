@@ -31,8 +31,7 @@
 /** 需要定义PRINT_LEVEL */
 #define PRINT_LEVEL DEBUG
 
-
-#define PRINT_PURE(level, ...)                                                      \
+#define PRINT_PURE(level, ...)                                                 \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
       printf("[" #level "]>>" __VA_ARGS__);                                    \
@@ -50,31 +49,31 @@
 
 #define PRINT_ERROR(...)                                                       \
   do {                                                                         \
-    PRINT(ERROR, ##__VA_ARGS__);                                                 \
+    PRINT(ERROR, ##__VA_ARGS__);                                               \
     printf("\n");                                                              \
   } while (0);
 
 #define PRINT_WARN(...)                                                        \
   do {                                                                         \
-    PRINT(WARN, ##__VA_ARGS__);                                                  \
+    PRINT(WARN, ##__VA_ARGS__);                                                \
     printf("\n");                                                              \
   } while (0);
 
 #define PRINT_INFO(...)                                                        \
   do {                                                                         \
-    PRINT(INFO, ##__VA_ARGS__);                                                  \
+    PRINT(INFO, ##__VA_ARGS__);                                                \
     printf("\n")                                                               \
   } while (0);
 
 #define PRINT_ENTRY(...)                                                       \
   do {                                                                         \
-    PRINT(ENTRY, ##__VA_ARGS__);                                                 \
+    PRINT(ENTRY, ##__VA_ARGS__);                                               \
     printf("\n");                                                              \
   } while (0);
 
 #define PRINT_DEBUG(...)                                                       \
   do {                                                                         \
-    PRINT(DEBUG, ##__VA_ARGS__);                                                 \
+    PRINT(DEBUG, ##__VA_ARGS__);                                               \
     printf("\n");                                                              \
   } while (0);
 
