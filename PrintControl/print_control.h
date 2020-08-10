@@ -35,6 +35,7 @@
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
       printf("[" #level "]>>" __VA_ARGS__);                                    \
+      printf("\n");                                                            \
     }                                                                          \
   } while (0);
 
@@ -44,37 +45,33 @@
       printf("<<File:%s  Line:%d  Function:%s>> \n", __FILE__, __LINE__,       \
              __FUNCTION__);                                                    \
       printf("[" #level "]>>" __VA_ARGS__);                                    \
+      printf("\n");                                                            \
     }                                                                          \
   } while (0);
 
 #define PRINT_ERROR(...)                                                       \
   do {                                                                         \
     PRINT(ERROR, ##__VA_ARGS__);                                               \
-    printf("\n");                                                              \
   } while (0);
 
 #define PRINT_WARN(...)                                                        \
   do {                                                                         \
     PRINT(WARN, ##__VA_ARGS__);                                                \
-    printf("\n");                                                              \
   } while (0);
 
 #define PRINT_INFO(...)                                                        \
   do {                                                                         \
     PRINT(INFO, ##__VA_ARGS__);                                                \
-    printf("\n")                                                               \
   } while (0);
 
 #define PRINT_ENTRY(...)                                                       \
   do {                                                                         \
     PRINT(ENTRY, ##__VA_ARGS__);                                               \
-    printf("\n");                                                              \
   } while (0);
 
 #define PRINT_DEBUG(...)                                                       \
   do {                                                                         \
     PRINT(DEBUG, ##__VA_ARGS__);                                               \
-    printf("\n");                                                              \
   } while (0);
 
 #endif //头文件
