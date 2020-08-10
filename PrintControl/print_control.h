@@ -3,15 +3,15 @@
 
 /**
  *
- *@file
+ *@file Print control
  *
- *@author
+ *@author lee-shun
  *
- *@data
+ *@data 2020-08-10
  *
  *@version
  *
- *@brief
+ *@brief control the output level
  *
  *@copyright
  *
@@ -28,8 +28,12 @@
 #define ENTRY 4
 #define DEBUG 5
 
-/** 需要定义PRINT_LEVEL */
+/**
+ *TODO:
+ * 需要定义PRINT_LEVEL
+ * */
 #define PRINT_LEVEL DEBUG
+
 
 #define PRINT_PURE(level, ...)                                                 \
   do {                                                                         \
