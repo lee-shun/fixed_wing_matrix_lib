@@ -96,7 +96,7 @@ public:
     return norm_squared() > testVal * testVal;
   }
 
-  Vector sqrt() const {
+  Vector esqrt() const {
     const Vector &a(*this);
     Vector r;
     for (size_t i = 0; i < M; i++) {
