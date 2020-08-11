@@ -54,7 +54,11 @@ public:
     return _data[i][j];
   }
 
-  inline Type &operator()(size_t i, size_t j) { return _data[i][j]; }
+  inline Type &operator()(size_t i, size_t j) {
+    assert(i < M);
+    assert(j < N);
+    return _data[i][j];
+  }
 
   Matrix<Type, M, N> &operator=(const Matrix<Type, M, N> &other) {
     if (this != &other) {
@@ -210,6 +214,8 @@ public:
 
   /**
    * Scalar Operations
+   * 矩阵缩放
+   * 和一个TYPE类型的元素进行操作
    */
 
   Matrix<Type, M, N> operator*(Type scalar) const {

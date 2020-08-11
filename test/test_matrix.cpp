@@ -8,7 +8,7 @@ int main()
     std::cout<<ma_4(1,1)<<std::endl;
 
     matrix::Matrix<float,2,2> MA = ma_4*2;
-    std::cout<<MA(1,1)<<std::endl;
+    std::cout<<MA(3,3)<<std::endl;
     MA.print();
 
     matrix::Matrix<float,2,2> MB = ma_4*MA;
