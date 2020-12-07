@@ -1,35 +1,60 @@
-#ifndef _MATRIX_HPP_
-#define _MATRIX_HPP_
-
 /**
+ * @file Matrix.hpp
  *
- *@file Matrix
+ * A simple matrix template library.
  *
- *@author lee-shun
- *
- *@data 2020-8-10
- *
- *@version
- *
- *@brief the Matrix Library after PX4-Matrix
- *
- *@copyright
- *
+ * @author James Goppert <james.goppert@gmail.com>
  */
-#include "../PrintControl/print_control.h"
-#include "../Tools/valid.hpp"
+
+#pragma once
+
+#include <cstdio>
+#include <cstring>
+
+#if defined(SUPPORT_STDIOSTREAM)
+#include <iomanip>
 #include <iostream>
-#include <string.h>
-#include <assert.h>
+#endif /* defined(SUPPORT_STDIOSTREAM) */
+
+#include "math.hpp"
+
+/* There is a bug in GCC 4.8, which causes the compiler to segfault due to array */
+/* {} constructors. Do for-loop constructors just for GCC 4.8 */
+#ifdef __GNUC__
+#define MATRIX_GCC_4_8_WORKAROUND                                              \
+  (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9))
+#else
+#define MATRIX_GCC_4_8_WORKAROUND 0
+#endif
 
 namespace matrix {
 
+template <typename Type, size_t M> class Vector;
+
+template <typename Type, size_t M, size_t N> class Matrix;
+
+template <typename Type, size_t P, size_t Q, size_t M, size_t N> class Slice;
+
 template <typename Type, size_t M, size_t N> class Matrix {
-private:
+#if MATRIX_GCC_4_8_WORKAROUND
+  Type _data[M][N];
+#else
   Type _data[M][N]{};
+#endif
 
 public:
+  /* Constructors */
+#if MATRIX_GCC_4_8_WORKAROUND
+  Matrix() {
+    for (size_t i = 0; i < M; i++) {
+      for (size_t j = 0; j < N; j++) {
+        _data[i][j] = Type{};
+      }
+    }
+  }
+#else
   Matrix() = default;
+#endif
 
   explicit Matrix(const Type data_[M * N]) {
     memcpy(_data, data_, sizeof(_data));
@@ -41,19 +66,31 @@ public:
 
   Matrix(const Matrix &other) { memcpy(_data, other._data, sizeof(_data)); }
 
+  template <size_t P, size_t Q>
+  Matrix(const Slice<Type, M, N, P, Q> &in_slice) {
+    Matrix<Type, M, N> &self = *this;
+    for (size_t i = 0; i < M; i++) {
+      for (size_t j = 0; j < N; j++) {
+        self(i, j) = in_slice(i, j);
+      }
+    }
+  }
 
   /**
-   * 运算符重载
-   * */
+   * Accessors/ Assignment etc.
+   */
 
   inline const Type &operator()(size_t i, size_t j) const {
     assert(i < M);
     assert(j < N);
+
     return _data[i][j];
   }
+
   inline Type &operator()(size_t i, size_t j) {
     assert(i < M);
     assert(j < N);
+
     return _data[i][j];
   }
 
@@ -68,9 +105,6 @@ public:
     memcpy(dst, _data, sizeof(Type) * M * N);
   }
 
-  /**
-   * 展开成为一维
-   * */
   void copyToColumnMajor(Type dst[M * N]) const {
     const Matrix<Type, M, N> &self = *this;
 
@@ -85,9 +119,11 @@ public:
    * Matrix Operations
    */
 
-  /**
-   * 矩阵乘法
-   * */
+  /* this might use a lot of programming memory */
+  /* since it instantiates a class for every */
+  /* required mult pair, but it provides */
+  /* compile time size_t checking */
+  /* M-N * N-P ==> M-P */
   template <size_t P>
   Matrix<Type, M, P> operator*(const Matrix<Type, N, P> &other) const {
     const Matrix<Type, M, N> &self = *this;
@@ -105,9 +141,6 @@ public:
     return res;
   }
 
-  /**
-   * 元素乘法
-   * */
   Matrix<Type, M, N> emult(const Matrix<Type, M, N> &other) const {
     Matrix<Type, M, N> res;
     const Matrix<Type, M, N> &self = *this;
@@ -121,9 +154,6 @@ public:
     return res;
   }
 
-  /**
-   * 元素除法
-   * */
   Matrix<Type, M, N> edivide(const Matrix<Type, M, N> &other) const {
     Matrix<Type, M, N> res;
     const Matrix<Type, M, N> &self = *this;
@@ -137,9 +167,6 @@ public:
     return res;
   }
 
-  /**
-   * 矩阵加法
-   * */
   Matrix<Type, M, N> operator+(const Matrix<Type, M, N> &other) const {
     Matrix<Type, M, N> res;
     const Matrix<Type, M, N> &self = *this;
@@ -153,9 +180,6 @@ public:
     return res;
   }
 
-  /**
-   * 矩阵减法
-   * */
   Matrix<Type, M, N> operator-(const Matrix<Type, M, N> &other) const {
     Matrix<Type, M, N> res;
     const Matrix<Type, M, N> &self = *this;
@@ -169,10 +193,7 @@ public:
     return res;
   }
 
-  /**
-   * 矩阵减法
-   * unary minus
-   * */
+  /* unary minus */
   Matrix<Type, M, N> operator-() const {
     Matrix<Type, M, N> res;
     const Matrix<Type, M, N> &self = *this;
@@ -211,8 +232,6 @@ public:
 
   /**
    * Scalar Operations
-   * 矩阵缩放
-   * 和一个TYPE类型的元素进行操作
    */
 
   Matrix<Type, M, N> operator*(Type scalar) const {
@@ -288,8 +307,31 @@ public:
   }
 
   /**
-   * 矩阵函数
-   * */
+   * Misc. Functions
+   */
+
+  void write_string(char *buf, size_t n) const {
+    buf[0] = '\0'; /* make an empty string to begin with (we need the '\0' for */
+                   /* strlen to work) */
+    const Matrix<Type, M, N> &self = *this;
+    for (size_t i = 0; i < M; i++) {
+      for (size_t j = 0; j < N; j++) {
+        snprintf(buf + strlen(buf), n - strlen(buf), "\t%8.8g",
+                 double(self(i, j))); /* directly append to the string buffer */
+      }
+      snprintf(buf + strlen(buf), n - strlen(buf), "\n");
+    }
+  }
+
+  void print() const {
+    /* element: tab, point, 8 digits, 4 scientific notation chars; row: newline; */
+    /* string: \0 end */
+    static const size_t n = 15 * N * M + M + 1;
+    char *buf = new char[n];
+    write_string(buf, n);
+    printf("%s\n", buf);
+    delete[] buf;
+  }
 
   Matrix<Type, N, M> transpose() const {
     Matrix<Type, N, M> res;
@@ -307,6 +349,40 @@ public:
   /* tranpose alias */
   inline Matrix<Type, N, M> T() const { return transpose(); }
 
+  template <size_t P, size_t Q>
+  const Slice<Type, P, Q, M, N> slice(size_t x0, size_t y0) const {
+    return Slice<Type, P, Q, M, N>(x0, y0, this);
+  }
+
+  template <size_t P, size_t Q>
+  Slice<Type, P, Q, M, N> slice(size_t x0, size_t y0) {
+    return Slice<Type, P, Q, M, N>(x0, y0, this);
+  }
+
+  const Slice<Type, 1, N, M, N> row(size_t i) const {
+    return slice<1, N>(i, 0);
+  }
+
+  Slice<Type, 1, N, M, N> row(size_t i) { return slice<1, N>(i, 0); }
+
+  const Slice<Type, M, 1, M, N> col(size_t j) const {
+    return slice<M, 1>(0, j);
+  }
+
+  Slice<Type, M, 1, M, N> col(size_t j) { return slice<M, 1>(0, j); }
+
+  void setRow(size_t i, const Matrix<Type, N, 1> &row_in) {
+    slice<1, N>(i, 0) = row_in.transpose();
+  }
+
+  void setRow(size_t i, Type val) { slice<1, N>(i, 0) = val; }
+
+  void setCol(size_t j, const Matrix<Type, M, 1> &column) {
+    slice<M, 1>(0, j) = column;
+  }
+
+  void setCol(size_t j, Type val) { slice<M, 1>(0, j) = val; }
+
   void setZero() { memset(_data, 0, sizeof(_data)); }
 
   inline void zero() { setZero(); }
@@ -323,11 +399,14 @@ public:
 
   inline void setOne() { setAll(1); }
 
+  inline void setNaN() { setAll(NAN); }
+
   void setIdentity() {
     setZero();
     Matrix<Type, M, N> &self = *this;
 
-    for (size_t i = 0; i < M && i < N; i++) {
+    const size_t min_i = M > N ? N : M;
+    for (size_t i = 0; i < min_i; i++) {
       self(i, i) = 1;
     }
   }
@@ -404,21 +483,17 @@ public:
     return min_val;
   }
 
-  void print() const {
+  bool isAllNan() const {
+    const Matrix<float, M, N> &self = *this;
+    bool result = true;
     for (size_t i = 0; i < M; i++) {
-      printf("[");
-      for (size_t j = 0; j < M; j++) {
-        std::cout << (_data[i][j]) << " ";
+      for (size_t j = 0; j < N; j++) {
+        result = result && isnan(self(i, j));
       }
-      printf("]\n");
     }
+    return result;
   }
-
-  Type col_num() const { return N; }
-
-  Type row_num() const { return M; }
-
-}; /*Matrix class*/
+};
 
 template <typename Type, size_t M, size_t N> Matrix<Type, M, N> zeros() {
   Matrix<Type, M, N> m;
@@ -429,6 +504,12 @@ template <typename Type, size_t M, size_t N> Matrix<Type, M, N> zeros() {
 template <typename Type, size_t M, size_t N> Matrix<Type, M, N> ones() {
   Matrix<Type, M, N> m;
   m.setOne();
+  return m;
+}
+
+template <size_t M, size_t N> Matrix<float, M, N> nans() {
+  Matrix<float, M, N> m;
+  m.setNaN();
   return m;
 }
 
@@ -450,6 +531,155 @@ bool isEqual(const Matrix<Type, M, N> &x, const Matrix<Type, M, N> &y,
   return true;
 }
 
-} // namespace matrix
+namespace typeFunction {
+template <typename Type> Type min(const Type x, const Type y) {
+  bool x_is_nan = isnan(x);
+  bool y_is_nan = isnan(y);
+  /* take the non-nan value if there is one */
+  if (x_is_nan || y_is_nan) {
+    if (x_is_nan && !y_is_nan) {
+      return y;
+    }
+    /* either !x_is_nan && y_is_nan or both are NAN anyways */
+    return x;
+  }
+  return (x < y) ? x : y;
+}
 
-#endif
+template <typename Type> Type max(const Type x, const Type y) {
+  bool x_is_nan = isnan(x);
+  bool y_is_nan = isnan(y);
+  /* take the non-nan value if there is one */
+  if (x_is_nan || y_is_nan) {
+    if (x_is_nan && !y_is_nan) {
+      return y;
+    }
+    /* either !x_is_nan && y_is_nan or both are NAN anyways */
+    return x;
+  }
+  return (x > y) ? x : y;
+}
+
+template <typename Type>
+Type constrain(const Type x, const Type lower_bound, const Type upper_bound) {
+  if (lower_bound > upper_bound) {
+    return NAN;
+  } else if (isnan(x)) {
+    return NAN;
+  } else {
+    return typeFunction::max(lower_bound, typeFunction::min(upper_bound, x));
+  }
+}
+} /* namespace typeFunction */
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> min(const Matrix<Type, M, N> &x,
+                       const Type scalar_upper_bound) {
+  Matrix<Type, M, N> m;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = 0; j < N; j++) {
+      m(i, j) = typeFunction::min(x(i, j), scalar_upper_bound);
+    }
+  }
+  return m;
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> min(const Type scalar_upper_bound,
+                       const Matrix<Type, M, N> &x) {
+  return min(x, scalar_upper_bound);
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> min(const Matrix<Type, M, N> &x1,
+                       const Matrix<Type, M, N> &x2) {
+  Matrix<Type, M, N> m;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = 0; j < N; j++) {
+      m(i, j) = typeFunction::min(x1(i, j), x2(i, j));
+    }
+  }
+  return m;
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> max(const Matrix<Type, M, N> &x,
+                       const Type scalar_lower_bound) {
+  Matrix<Type, M, N> m;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = 0; j < N; j++) {
+      m(i, j) = typeFunction::max(x(i, j), scalar_lower_bound);
+    }
+  }
+  return m;
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> max(const Type scalar_lower_bound,
+                       const Matrix<Type, M, N> &x) {
+  return max(x, scalar_lower_bound);
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> max(const Matrix<Type, M, N> &x1,
+                       const Matrix<Type, M, N> &x2) {
+  Matrix<Type, M, N> m;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = 0; j < N; j++) {
+      m(i, j) = typeFunction::max(x1(i, j), x2(i, j));
+    }
+  }
+  return m;
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> constrain(const Matrix<Type, M, N> &x,
+                             const Type scalar_lower_bound,
+                             const Type scalar_upper_bound) {
+  Matrix<Type, M, N> m;
+  if (scalar_lower_bound > scalar_upper_bound) {
+    m.setNaN();
+  } else {
+    for (size_t i = 0; i < M; i++) {
+      for (size_t j = 0; j < N; j++) {
+        m(i, j) = typeFunction::constrain(x(i, j), scalar_lower_bound,
+                                          scalar_upper_bound);
+      }
+    }
+  }
+  return m;
+}
+
+template <typename Type, size_t M, size_t N>
+Matrix<Type, M, N> constrain(const Matrix<Type, M, N> &x,
+                             const Matrix<Type, M, N> &x_lower_bound,
+                             const Matrix<Type, M, N> &x_upper_bound) {
+  Matrix<Type, M, N> m;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = 0; j < N; j++) {
+      m(i, j) = typeFunction::constrain(x(i, j), x_lower_bound(i, j),
+                                        x_upper_bound(i, j));
+    }
+  }
+  return m;
+}
+
+#if defined(SUPPORT_STDIOSTREAM)
+template <typename Type, size_t M, size_t N>
+std::ostream &operator<<(std::ostream &os,
+                         const matrix::Matrix<Type, M, N> &matrix) {
+  for (size_t i = 0; i < M; ++i) {
+    os << "[";
+    for (size_t j = 0; j < N; ++j) {
+      os << std::setw(10) << matrix(i, j);
+      os << "\t";
+    }
+    os << "]" << std::endl;
+  }
+  return os;
+}
+#endif /* defined(SUPPORT_STDIOSTREAM) */
+
+} /* namespace matrix */
+
+/* vim: set et fenc=utf-8 ff=unix sts=0 sw=4 ts=4 : */
