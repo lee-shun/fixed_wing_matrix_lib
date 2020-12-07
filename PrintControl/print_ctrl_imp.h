@@ -1,5 +1,5 @@
-#ifndef _PRINT_CONTROL_HPP_
-#define _PRINT_CONTROL_HPP_
+#ifndef _PRINT_CTRL_IMP_H_
+#define _PRINT_CTRL_IMP_H_
 
 /**
  *
@@ -32,7 +32,27 @@
  *TODO:
  * 需要定义PRINT_LEVEL
  * */
+/* #define PRINT_LEVEL DEBUG */
+
+#if defined(COM_DEBUG)
 #define PRINT_LEVEL DEBUG
+
+#elif defined(COM_ENTRY)
+#define PRINT_LEVEL ENTRY
+
+#elif defined(COM_INFO)
+#define PRINT_LEVEL INFO
+
+#elif defined(COM_WARN)
+#define PRINT_LEVEL WARN
+
+#elif defined(COM_ERROR)
+#define PRINT_LEVEL ERROR
+
+#else
+#define PRINT_LEVEL NONE
+
+#endif
 
 #define PRINT_PURE(level, ...)                                                 \
   do {                                                                         \
@@ -45,9 +65,25 @@
 #define PRINT(level, ...)                                                      \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
-      printf("\033[0;33m[File:%s  Line:%d  Function:%s]\033[0m \n", __FILE__,  \
-             __LINE__, __PRETTY_FUNCTION__);                                          \
-      printf("[" #level "]: " __VA_ARGS__);                                    \
+      printf("\033[0;36m[File:%s  Line:%d  Function:%s]\033[0m \n", __FILE__,  \
+             __LINE__, __PRETTY_FUNCTION__);                                   \
+      switch (level) {                                                         \
+      case DEBUG:                                                              \
+        printf("\033[0;32m[" #level "]\033[0m: " __VA_ARGS__);                 \
+        break;                                                                 \
+      case ENTRY:                                                              \
+        printf("\033[0;35m[" #level "]\033[0m: " __VA_ARGS__);                 \
+        break;                                                                 \
+      case INFO:                                                               \
+        printf("\033[0;34m[" #level "]\033[0m: " __VA_ARGS__);                 \
+        break;                                                                 \
+      case WARN:                                                               \
+        printf("\033[0;33m[" #level "]\033[0m: " __VA_ARGS__);                 \
+        break;                                                                 \
+      case ERROR:                                                              \
+        printf("\033[0;31m[" #level "]\033[0m: " __VA_ARGS__);                 \
+        break;                                                                 \
+      }                                                                        \
       printf("\n");                                                            \
     }                                                                          \
   } while (0);
