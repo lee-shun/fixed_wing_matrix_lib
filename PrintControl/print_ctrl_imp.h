@@ -54,6 +54,15 @@
 
 #endif
 
+/* 颜色的定义 */
+#define COLOR(color, msg) "\033[0;1;" #color "m" msg "\033[0m"
+#define RED 31
+#define GREEN 32
+#define YELLOW 33
+#define PURPLE 34
+#define PINK 35
+#define BLUE 36
+
 #define PRINT_PURE(level, ...)                                                 \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
@@ -62,55 +71,39 @@
     }                                                                          \
   } while (0);
 
-#define PRINT(level, ...)                                                      \
+#define PRINT(color, level, ...)                                               \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
-      printf("\033[0;36m[File:%s  Line:%d  Function:%s]\033[0m \n", __FILE__,  \
+      printf(COLOR(36, "[File:%s  Line:%d  Function:%s]\n"), __FILE__,        \
              __LINE__, __PRETTY_FUNCTION__);                                   \
-      switch (level) {                                                         \
-      case DEBUG:                                                              \
-        printf("\033[0;32m[" #level "]\033[0m: " __VA_ARGS__);                 \
-        break;                                                                 \
-      case ENTRY:                                                              \
-        printf("\033[0;35m[" #level "]\033[0m: " __VA_ARGS__);                 \
-        break;                                                                 \
-      case INFO:                                                               \
-        printf("\033[0;34m[" #level "]\033[0m: " __VA_ARGS__);                 \
-        break;                                                                 \
-      case WARN:                                                               \
-        printf("\033[0;33m[" #level "]\033[0m: " __VA_ARGS__);                 \
-        break;                                                                 \
-      case ERROR:                                                              \
-        printf("\033[0;31m[" #level "]\033[0m: " __VA_ARGS__);                 \
-        break;                                                                 \
-      }                                                                        \
+      printf(COLOR(color, "["#level"]") __VA_ARGS__);                                \
       printf("\n");                                                            \
     }                                                                          \
   } while (0);
 
 #define PRINT_ERROR(...)                                                       \
   do {                                                                         \
-    PRINT(ERROR, ##__VA_ARGS__);                                               \
+    PRINT(31, ERROR, ##__VA_ARGS__);                                          \
   } while (0);
 
 #define PRINT_WARN(...)                                                        \
   do {                                                                         \
-    PRINT(WARN, ##__VA_ARGS__);                                                \
+    PRINT(32, WARN, ##__VA_ARGS__);                                         \
   } while (0);
 
 #define PRINT_INFO(...)                                                        \
   do {                                                                         \
-    PRINT(INFO, ##__VA_ARGS__);                                                \
+    PRINT(33, INFO, ##__VA_ARGS__);                                        \
   } while (0);
 
 #define PRINT_ENTRY(...)                                                       \
   do {                                                                         \
-    PRINT(ENTRY, ##__VA_ARGS__);                                               \
+    PRINT(34, ENTRY, ##__VA_ARGS__);                                       \
   } while (0);
 
 #define PRINT_DEBUG(...)                                                       \
   do {                                                                         \
-    PRINT(DEBUG, ##__VA_ARGS__);                                               \
+    PRINT(35, DEBUG, ##__VA_ARGS__);                                         \
   } while (0);
 
 #endif //头文件
