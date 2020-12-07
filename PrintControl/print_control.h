@@ -46,9 +46,9 @@
 #define PRINT(level, ...)                                                      \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
-      printf("<<File:%s  Line:%d  Function:%s>> \n", __FILE__, __LINE__,       \
+      printf("\033[0;33m[File:%s  Line:%d  Function:%s]\033[0m \n", __FILE__, __LINE__,       \
              __FUNCTION__);                                                    \
-      printf("[" #level "]>>" __VA_ARGS__);                                    \
+      printf("[" #level "]: " __VA_ARGS__);                                    \
       printf("\n");                                                            \
     }                                                                          \
   } while (0);
