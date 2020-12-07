@@ -74,36 +74,36 @@
 #define PRINT(color, level, ...)                                               \
   do {                                                                         \
     if (level <= PRINT_LEVEL) {                                                \
-      printf(COLOR(36, "[File:%s  Line:%d  Function:%s]\n"), __FILE__,        \
+      printf(COLOR(36, "[File:%s  Line:%d  Function:%s]\n"), __FILE__,         \
              __LINE__, __PRETTY_FUNCTION__);                                   \
-      printf(COLOR(color, "["#level"]") __VA_ARGS__);                                \
+      printf(COLOR(color, "[" #level "]") __VA_ARGS__);                        \
       printf("\n");                                                            \
     }                                                                          \
   } while (0);
 
 #define PRINT_ERROR(...)                                                       \
   do {                                                                         \
-    PRINT(31, ERROR, ##__VA_ARGS__);                                          \
+    PRINT(31, ERROR, ##__VA_ARGS__);                                           \
   } while (0);
 
 #define PRINT_WARN(...)                                                        \
   do {                                                                         \
-    PRINT(32, WARN, ##__VA_ARGS__);                                         \
+    PRINT(32, WARN, ##__VA_ARGS__);                                            \
   } while (0);
 
 #define PRINT_INFO(...)                                                        \
   do {                                                                         \
-    PRINT(33, INFO, ##__VA_ARGS__);                                        \
+    PRINT(33, INFO, ##__VA_ARGS__);                                            \
   } while (0);
 
 #define PRINT_ENTRY(...)                                                       \
   do {                                                                         \
-    PRINT(34, ENTRY, ##__VA_ARGS__);                                       \
+    PRINT(34, ENTRY, ##__VA_ARGS__);                                           \
   } while (0);
 
 #define PRINT_DEBUG(...)                                                       \
   do {                                                                         \
-    PRINT(35, DEBUG, ##__VA_ARGS__);                                         \
+    PRINT(35, DEBUG, ##__VA_ARGS__);                                           \
   } while (0);
 
 #endif //头文件
