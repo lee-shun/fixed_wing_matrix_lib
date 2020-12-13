@@ -32,6 +32,7 @@
  *TODO:
  * 需要定义PRINT_LEVEL
  * */
+
 /* #define PRINT_LEVEL DEBUG */
 
 #if defined(COM_DEBUG)
@@ -54,7 +55,10 @@
 
 #endif
 
-/* 颜色的定义 */
+/* 颜色的定义
+ * TODO: 此处的#color有两个宏定义初始化先后顺序的问题
+ * */
+
 #define COLOR(color, msg) "\033[0;1;" #color "m" msg "\033[0m"
 #define RED 31
 #define GREEN 32
@@ -106,4 +110,4 @@
     PRINT(35, DEBUG, ##__VA_ARGS__);                                           \
   } while (0);
 
-#endif //头文件
+#endif /*头文件 */
